@@ -3,7 +3,7 @@
 This code attempts to find the gate and dice objects from a video stream. It does this by first detecting with countours, 
 then it applies the neural network to the image and predicts what type of object it is.
 
-## Dependency Installation
+## Dependency and Weights Installation
 
 ```bash
 bash setup.sh
