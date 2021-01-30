@@ -6,6 +6,7 @@ then it applies the neural network to the image and predicts what type of object
 ## Dependency Installation
 
 ```bash
+bash setup.sh
 python3 -m pip install opencv-python
 python3 -m pip install imutils
 ```
