@@ -14,5 +14,5 @@ python3 -m pip install imutils
 ## Usage
 
 ```bash
-python3 vision.py (--video/-v or --image/-i) /path/to/file
+python3 vision.py (--video/-v or --image/-i) (/path/to/file or webcam number)
 ```
