@@ -5,6 +5,8 @@ then it applies the neural network to the image and predicts what type of object
 
 ## Dependency and Weights Installation
 
+Make sure you are in the general directory before running the setup script
+
 ```bash
 bash setup.sh
 python3 -m pip install opencv-python

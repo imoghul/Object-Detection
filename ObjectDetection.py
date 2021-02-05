@@ -14,7 +14,6 @@ from region import Region
 
 defaultThresh=30
 
-
 # processes the image by converting to grayscale, dilating, and finding canny edges
 def getProcessed(image,threshold1=15,threshold2=20,sigma=12):
     image = imutils.resize(image.copy(),width=750)
@@ -39,7 +38,9 @@ def getProcessed(image,threshold1=15,threshold2=20,sigma=12):
         edged = cv.Canny(imgGray, lower, upper)
         dilated = cv.dilate(edged, dilationKernal, iterations=dilationIterations)
         return dilated
-# returns found contours
+# returns found contours from processed image
+# param processed: a processed image from getProcesssed()
+# param maxContours: contour cap
 def getContours(processed,maxContours=None):
     imgProcessed = processed.copy()#getProcessed(image,threshold1=thresh1,threshold2=thresh2)
     cnt, hierarchy = cv.findContours(imgProcessed, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE) 
@@ -55,6 +56,7 @@ def getContours(processed,maxContours=None):
         cnt=cnt[0:min(maxContours,len(cnt))]
     return cnt
 # gets boundingbox rect for each contour and sorts by area
+# paraam cnt: contours from getContours()
 def getTargets(cnt,maxTargets=None):
     targets = []
     for c in cnt:
@@ -87,6 +89,7 @@ def getBoxes(targets):
     boxes.reverse()
     return boxes
 # converts bounding boxes into possible objects
+# param boxes: boxes of type Rect determined by either getTargets() or getBoxes()
 def getObjects(boxes):
     objects=[]
     if(len(boxes)>0):
@@ -118,7 +121,7 @@ def getObjectsFinal(frame,threshval1=None,threshval2=None,minContours=None,maxCo
 
 
 
-# depricated theshold tuning, might be useful
+# depricated theshold tuning, might be useful later
 # def tuneThresh(image,thresh,lower,upper,recursionDepth=0,minThresh=defaultThresh):
 #     def getNumContours(image,threshold):
 #         src_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)

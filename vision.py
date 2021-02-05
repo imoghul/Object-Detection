@@ -6,7 +6,7 @@ import random
 import argparse
 import utils
 import time
-print("q: to quit\nt: to toggle automatically detecting when there is action(current state shown by color of border)\nd: to detect no matter")
+print("q: to quit\nt: to toggle automatically detecting when there is action(current state shown by color of border)\nd: to force a detection unconditionally")
 
 classifying=True;
 
@@ -39,8 +39,6 @@ if(isVideo):
     webcam.read()
 ###
 
-
-
 ### creating trackbars for tuning
 def empty(a):
     pass
@@ -56,7 +54,7 @@ cv.createTrackbar("Threshold2","Final",20,255,empty)#10
 ###
 global fps
 detectedObjects=[]
-detected=[]
+detected=None
 fps = 60
 isClassifying=False # if automatic contour detection to neural network detection is on
 key=cv.waitKey(1)
@@ -101,7 +99,7 @@ while(not (key & 0xFF == ord('q'))): # main loop
     screen = empty.copy()
     targetFrame = empty.copy()
     cv.rectangle(real,(0,0),(real.shape[1], real.shape[0]),detectingColor,thickness=5)
-    if(detected==[]):
+    if(type(detected)==type(None)):
         detected=empty.copy()
 
     # draw contours
