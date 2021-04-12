@@ -4,13 +4,12 @@ import sys
 
 import cv2 as cv
 import imutils
-# import matplotlib.pyplot as plt
 import numpy as np
 
 import rect
 import region
-from rect import Rect
-from region import Region
+from rect import *
+from region import *
 
 defaultThresh=30
 
@@ -111,10 +110,8 @@ def getObjects(boxes):
 
     return objects
 # automatically combines all of the steps above and gives predicted objects based on an image
-def getObjectsFinal(frame,threshval1=None,threshval2=None,minContours=None,maxContours=None,maxTargets=None):
+def getObjectsFinal(frame,threshval1=15,threshval2=20,maxContours=None,maxTargets=None):
     return getObjects(getBoxes(getTargets(getContours(getProcessed(frame,threshold1=threshval1,threshold2=threshval2),maxContours=maxContours),maxTargets=maxTargets)))
-
-
 
 
 

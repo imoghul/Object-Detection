@@ -6,6 +6,8 @@ import random
 import argparse
 import utils
 import time
+from rect import getVector
+
 print("q: to quit\nt: to toggle automatically detecting when there is action(current state shown by color of border)\nd: to force a detection unconditionally")
 
 classifying=True;
@@ -59,6 +61,7 @@ fps = 60
 isClassifying=False # if automatic contour detection to neural network detection is on
 key=cv.waitKey(1)
 lastTime = int(time.time())
+dnnTimeDelay = 3#seconds
 
 while(not (key & 0xFF == ord('q'))): # main loop
     timer = cv.getTickCount()
@@ -89,7 +92,7 @@ while(not (key & 0xFF == ord('q'))): # main loop
     contours = ObjectDetection.getContours(processed)
     targets = ObjectDetection.getTargets(contours)
     boxes = ObjectDetection.getBoxes(targets)
-    objects = ObjectDetection.getObjectsFinal(frame, threshval1 = thresh1, threshval2 = thresh2)#ObjectDetection.getObjects(boxes)
+    objects = ObjectDetection.getObjects(boxes)#ObjectDetection.getObjectsFinal(frame, threshval1 = thresh1, threshval2 = thresh2)
     gameObjects = classifier.getObjects(objects) # DNN detections
     ### image initialization for each frame
     detectingColor = (0,255,0) if isClassifying else (0,0,255)
@@ -128,7 +131,7 @@ while(not (key & 0xFF == ord('q'))): # main loop
             detected = empty.copy()#originalFrame.copy()
             detectedFrame = originalFrame.copy()
         # DNN detection
-        elif isClassifying and (not gameObjects[0]==None) and abs(int(time.time())-lastTime)>10:
+        elif isClassifying and (not gameObjects[0]==None) and abs(int(time.time())-lastTime)>dnnTimeDelay:
             lastTime = int(time.time())
             if (gameObjects[0].area>50000):
                 detectedObjects=classifier.getYoloObjects(originalFrame) 
@@ -139,6 +142,7 @@ while(not (key & 0xFF == ord('q'))): # main loop
         for o in detectedObjects:
             o.setRegion(detectedFrame,detected)
             o.drawColor(detected,randColor,thickness=3,drawDescriptions=True)
+            print(getVector(o,real))
         # cv.imwrite("result.jpg",detected)
     
     # stitching images and writing output

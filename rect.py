@@ -1,6 +1,7 @@
 from __future__ import print_function
 import cv2 as cv
 import random
+import math
 import numpy as np
 # from sklearn.cluster import KMeans
 
@@ -103,7 +104,7 @@ class Rect:
         cv.rectangle(image,(self.x,self.y),(self.x+self.w,self.y+self.h),c,thickness)
         # cv.putText(image,"{}".format(int(self.getArea())),(self.getCenterX(),self.getCenterY()),cv.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255),1)
         if drawDescriptions:
-            cv.putText(image,"{}".format(str(self.proposedObject)+str(self.confidence)),(self.getCenterX(),self.getCenterY()),cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),1)
+            cv.putText(image,"{}".format(str(self.confidence)),(self.getCenterX(),self.getCenterY()),cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255),1)
     # returns if there is a collision between self and other
     def isIn(self, rect):
         x2 = rect.getX()
@@ -210,3 +211,18 @@ def getClusters(rectangles):
         rects.sort(key=lambda target:target.getArea())
         rects.reverse()
         return rects
+# returns tuple (distance,angle horizontal, angle vertical) 
+# needs actual measurements to get a good reading
+def getVector(r,screen):
+    scaleFactor = 1
+    angleRangeH = 80
+    angleRangeV = 50
+    screenW = len(screen[0])
+    screenH =len(screen)
+    dx = r.getCenterX()-(screenW/2)
+    dy = r.getCenterY()-(screenH/2)
+    print(dx,dy)
+    angleH = (dx/screenW)*angleRangeH
+    angleV = (dy/screenH)*angleRangeV
+    distance = math.sqrt(dx**2+dy**2+scaleFactor**2)
+    return (distance,angleH,angleV)

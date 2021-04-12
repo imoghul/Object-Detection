@@ -50,10 +50,8 @@ class Classifier:
                     center_y = int(detection[1]*height)
                     w = int(detection[2]*width)
                     h = int(detection[3]*height)
-
                     x = int(center_x - w/2)
                     y = int(center_y - h/2)
-
                     boxes.append([x, y, w, h])
                     confidences.append((float(confidence)))
                     class_ids.append(class_id)
@@ -68,11 +66,11 @@ class Classifier:
                 #     label="gate"
                 confidence = str(round(confidences[i],2))
                 result.append(Rect(x,y,w,h,proposedObject=label,confidence=confidence))
-            for r in result:
-                cv.rectangle(image, (x,y), (x+w, y+h), (random.randint(0,256),random.randint(0,256),random.randint(0,256)), 2)
-                cv.putText(image, label + " " + confidence, (x, y+20), cv.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2)
-                r.drawColor(img,(random.randint(0,256),random.randint(0,256),random.randint(0,256)),thickness=3,drawDescriptions=True)
-            cv.imwrite("result.jpg",image)
+            # for r in result:
+            #     cv.rectangle(image, (x,y), (x+w, y+h), (random.randint(0,256),random.randint(0,256),random.randint(0,256)), 2)
+            #     cv.putText(image, label + " " + confidence, (x, y+20), cv.FONT_HERSHEY_PLAIN, 2, (255,255,255), 2)
+            #     r.drawColor(img,(random.randint(0,256),random.randint(0,256),random.randint(0,256)),thickness=3,drawDescriptions=True)
+            # cv.imwrite("result.jpg",image)
             result.sort(key = lambda obj:obj.confidence)
             result.reverse()
         return result
