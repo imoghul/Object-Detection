@@ -6,7 +6,7 @@ import random
 import argparse
 import utils
 import time
-from rect import getVector
+from rect import *
 
 print("q: to quit\nt: to toggle automatically detecting when there is action(current state shown by color of border)\nd: to force a detection unconditionally")
 
