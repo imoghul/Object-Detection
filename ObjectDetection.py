@@ -26,8 +26,8 @@ def getProcessed(image,threshold1=15,threshold2=20,sigma=12):
     auto=False
     if(not auto):
         imgCanny = cv.Canny(imgGray, threshold1,threshold2) 
-        imgDilated = cv.dilate(imgCanny, dilationKernal, iterations=dilationIterations)
-        return imgDilated
+        #imgDilated = cv.dilate(imgCanny, dilationKernal, iterations=dilationIterations)
+        return imgCanny#imgDilated
     else:
         v = np.mean(imgGray)
         sigma = cv.getTrackbarPos("Sigma", "Final")/100
@@ -35,8 +35,8 @@ def getProcessed(image,threshold1=15,threshold2=20,sigma=12):
         upper = int(min(255, (1.0 + sigma) * v))/4
         print(upper,lower)
         edged = cv.Canny(imgGray, lower, upper)
-        dilated = cv.dilate(edged, dilationKernal, iterations=dilationIterations)
-        return dilated
+        #dilated = cv.dilate(edged, dilationKernal, iterations=dilationIterations)
+        return edged#dilated
 # returns found contours from processed image
 # param processed: a processed image from getProcesssed()
 # param maxContours: contour cap
@@ -46,7 +46,7 @@ def getContours(processed,maxContours=None):
     temp  = cnt
     cnt=[]
     for c in temp:
-        if cv.contourArea(c)>250:
+        if 1 or cv.contourArea(c)>250:
             cnt.append(c)
     cnt.sort(key=lambda contour:cv.contourArea(contour))
     cnt.reverse()
@@ -58,20 +58,15 @@ def getContours(processed,maxContours=None):
 # paraam cnt: contours from getContours()
 def getTargets(cnt,maxTargets=None):
     targets = []
-    for c in cnt:
-        rect = cv.minAreaRect(c)
-        # c = cv.approxPolyDP(c, 0.04 * cv.arcLength(c, True), True)
+    for current in cnt:
+        minrect = cv.minAreaRect(current)
+        c = cv.approxPolyDP(current, 0.04 * cv.arcLength(current, True), True)
         x,y,w,h = cv.boundingRect(c)
-        # region = Region(rect)
-        region = Rect(x,y,w,h)
-        if True:#(region.area>500):
-            targets.append(region)
-
-    # temp=targets.copy()
-    # targets=[]
-    # for t in temp:
-    #     targets.append(t)
-
+        region = Region(minrect)
+        rect = Rect(x,y,w,h)
+        rect.Region = region
+        if (rect.area>500):
+            targets.append(rect)
     targets.sort(key=lambda target:target.area)
     targets.reverse()
     maxTargets = len(targets) if maxTargets==None else maxTargets

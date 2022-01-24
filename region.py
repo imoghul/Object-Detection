@@ -60,7 +60,14 @@ class Region:
         def between(first, lower, upper):
             return first>=lower and first<=upper
         return(between(self.left,region.left,region.right) or between(self.right,region.left,region.right)) and (between(self.up,region.up,region.down) or between(self.down,region.up,region.down))
-
+    def getClassification(self):
+        try:
+            whRatio = max(self.width,self.height)/min(self.width,self.height)
+            tilt = self.angle if self.angle<=90 else self.angle%90
+            if whRatio<5 or abs(tilt-45)<10: return "BAD"
+            return "OK"
+        except:
+            return "UNINITIALIZED"
 def conflictsRemain(l):
         for group in range(len(l)):
             for rect in range(len(l)):

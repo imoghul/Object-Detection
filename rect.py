@@ -11,6 +11,7 @@ class Rect:
     thresh = 50 # the threshold for how close another box needs to be to combine
     num = 0 # id for a box to differentiate between boxes
     area = 0
+    midPoint=(None,None)
     color = (255,0,0)#(rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
     confidence = 0
     proposedType="" # taller, wider, squarish
@@ -20,14 +21,13 @@ class Rect:
     objects=[]
 
     def __init__(self,x,y,w,h,number=None,proposedObject="",confidence=0):
-        from objectClassification.Classifier import Classifier
         self.x = x if x>0 else 0
         self.y = y if y>0 else 0
         self.w = w if w>0 else 0
         self.h = h if h>0 else 0
         self.area = self.w*self.h
         self.confidence=confidence
-
+        self.midPoint = (self.x+self.w/2,self.y+self.h/2)
         if(self.h/self.w>1.3):
             self.proposedType="taller"
         elif(self.w/self.h>1.3):
@@ -167,7 +167,7 @@ class Rect:
         # print(color)
         return color
 # returns the bounding box around multiple rects
-def boudingBox(rectangles,n=None):
+def boundingBox(rectangles,n=None):
     minX=[]
     minY=[]
     maxX=[]
@@ -183,7 +183,7 @@ def boudingBox(rectangles,n=None):
         return Rect(min(minX),min(minY),max(maxX)-min(minX),max(maxY)-min(minY),n)
 # the condition on which 2 boxes will combine
 def isConflicting(l, index1,index2):
-    return (not(index1==index2)) and ((l[index1].isIn(l[index2]) or l[index1].getTooClose(l[index2])))
+    return (not(index1==index2)) and ((l[index1].isIn(l[index2]) ))#or l[index1].getTooClose(l[index2])))
 # returns if there are still any conflicts remaining
 def conflictsRemain(l):
         for group in range(len(l)):
@@ -199,7 +199,7 @@ def getClusters(rectangles):
         for rect in range(len(rects)):
             for other in range(len(rects)):
                 if(isConflicting(rects,rect,other)):
-                    bounding = boudingBox([rects[rect],rects[other]])
+                    bounding = boundingBox([rects[rect],rects[other]])
                     a = rects[rect]
                     b = rects[other]
                     rects.remove(a)
