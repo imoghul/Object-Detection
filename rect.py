@@ -8,32 +8,26 @@ import numpy as np
 
 class Rect:
     x,y,w,h = 0,0,0,0
-    thresh = 50 # the threshold for how close another box needs to be to combine
+    thresh = 10 # the threshold for how close another box needs to be to combine
     num = 0 # id for a box to differentiate between boxes
     area = 0
     midPoint=(None,None)
     color = (255,0,0)#(rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
     confidence = 0
-    proposedType="" # taller, wider, squarish
     proposedObject="" # gate, dice
     region=None
     image=None
     objects=[]
-
+    Region = None
     def __init__(self,x,y,w,h,number=None,proposedObject="",confidence=0):
         self.x = x if x>0 else 0
         self.y = y if y>0 else 0
         self.w = w if w>0 else 0
         self.h = h if h>0 else 0
+
         self.area = self.w*self.h
         self.confidence=confidence
         self.midPoint = (self.x+self.w/2,self.y+self.h/2)
-        if(self.h/self.w>1.3):
-            self.proposedType="taller"
-        elif(self.w/self.h>1.3):
-            self.proposedType="wider"
-        else:
-            self.proposedType="squarish"
         self.proposedObject=proposedObject
         self.num = number if not number==None else random.randint(0,1000)
     # getters, basically useless
@@ -167,7 +161,7 @@ class Rect:
         # print(color)
         return color
 # returns the bounding box around multiple rects
-def boundingBox(rectangles,n=None):
+def boundingBoxRects(rectangles,n=None):
     minX=[]
     minY=[]
     maxX=[]
@@ -180,10 +174,11 @@ def boundingBox(rectangles,n=None):
             maxX.append(r.getX()+r.getW())
             minY.append(r.getY())
             maxY.append(r.getY()+r.getH())
-        return Rect(min(minX),min(minY),max(maxX)-min(minX),max(maxY)-min(minY),n)
+        r = Rect(min(minX),min(minY),max(maxX)-min(minX),max(maxY)-min(minY),n)
+        return r
 # the condition on which 2 boxes will combine
 def isConflicting(l, index1,index2):
-    return (not(index1==index2)) and ((l[index1].isIn(l[index2]) ))#or l[index1].getTooClose(l[index2])))
+    return (not(index1==index2)) and ((l[index1].isIn(l[index2]) or l[index1].getTooClose(l[index2])))
 # returns if there are still any conflicts remaining
 def conflictsRemain(l):
         for group in range(len(l)):
@@ -193,19 +188,19 @@ def conflictsRemain(l):
                             return True
         return False;
 # recursively combines rects until a big supposed object is created
-def getClusters(rectangles):
+def getClustersRects(rectangles):
     rects = rectangles.copy()
     if(conflictsRemain(rects)):
         for rect in range(len(rects)):
             for other in range(len(rects)):
                 if(isConflicting(rects,rect,other)):
-                    bounding = boundingBox([rects[rect],rects[other]])
+                    bounding = boundingBoxRects([rects[rect],rects[other]])
                     a = rects[rect]
                     b = rects[other]
                     rects.remove(a)
                     rects.remove(b)
                     rects.append(bounding)
-                    return getClusters(rects)
+                    return getClustersRects(rects)
 
     else:
         rects.sort(key=lambda target:target.getArea())

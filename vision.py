@@ -8,8 +8,9 @@ import argparse
 import utils
 import time
 from rect import *
+from classifier import *
 
-print("q: to quit\nt: to toggle automatically detecting when there is action(current state shown by color of border)\nd: to force a detection unconditionally")
+print("q: to quit")#\nt: to toggle automatically detecting when there is action(current state shown by color of border)\nd: to force a detection unconditionally")
 
 ### this section determines what file to analyze
 file = ""
@@ -89,7 +90,6 @@ while(not (key & 0xFF == ord('q'))): # main loop
     targetFrame = empty.copy()
     if(type(detected)==type(None)):
         detected=empty.copy()
-
     # draw contours
     cv.drawContours(blank, contours, -1, (255, 255, 255), 1)
     # draw targets
@@ -100,31 +100,14 @@ while(not (key & 0xFF == ord('q'))): # main loop
         else : t.Region.drawColor(blank,(0,0,255),thickness=1)
     for b in boxes:
         b.drawColor(processed,(0,255,0),thickness=1)
-    # draw objects
-    # counter = 0
-    # for o in objects:
-    #     counter+=1
-    #     if(counter<=4):
-    #         o.setRegion(real,screen)
-    #         objectColor = o.getColor(real)
-    #         o.drawColor(screen,objectColor)
-    #     o.drawColor(frame,randColor)
-    interests = []
-    for b in boxes:
-        if b.Region.getClassification()!="BAD" and (b.proposedType == "taller" or b.proposedType=="wider"):
-            interests.append(b)
-    proposedPoles = [x for x in interests if x.proposedType=="taller"]
-    proposedTops=[]
-    midPoints = [x.midPoint for x in proposedPoles]
-    lowestX = min([x[0] for x in midPoints]) if midPoints!=[] else -1000
-    largestX = max([x[0] for x in midPoints]) if midPoints!=[] else 100000
-    for i in [x for x in interests if x.proposedType=="wider"]:
-        if False not in[i.midPoint[1]<x[1] and i.midPoint[0]>lowestX and i.midPoint[0]<largestX for x in midPoints]: proposedTops.append(i)
-    for i in proposedPoles+proposedTops:
+    interests = getInterests(boxes)
+    proposedPoles = getProposedPoles(interests)
+    proposedTops = getProposedTops(interests,proposedPoles)
+    gateBoxes = proposedPoles+proposedTops
+    gateBox = boundingBoxRects(gateBoxes)
+    for i in gateBoxes:
         i.drawColor(screen,(0,255,0),thickness=1)
-    boundingBox(proposedPoles+proposedTops).drawColor(frame,(255,0,0))
-    # create hull array for convex hull points
-    
+    if gateBox!=None:gateBox.drawColor(frame,(0,0,255))
     # stitching images and writing output
     stacked = utils.stackImages(1,([blank,processed],[screen,frame]))
     fps = cv.getTickFrequency() / (cv.getTickCount() - timer)

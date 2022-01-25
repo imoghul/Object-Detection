@@ -21,7 +21,7 @@ class Region:
     up=0
     down=0
     num=0
-    def __init__(self, target):
+    def __init__(self, target=[[-1,-1],[-1,-1],-1]):
         self.x = target[0][0]
         self.y = target[0][1]
         self.angle = target[2]
@@ -31,6 +31,14 @@ class Region:
         else:
             self.width = target[1][1]
             self.height = target[1][0]
+        self.width = 1 if self.width==0 else self.width
+        self.height = 1 if self.height==0 else self.height
+        if(self.height/self.width>1.3):
+            self.proposedType="taller"
+        elif(self.width/self.height>1.3):
+            self.proposedType="wider"
+        else:
+            self.proposedType="squarish"
         self.area = self.width*self.height
         self.boxpoints=np.int0(cv.boxPoints(target))
         xs = [i[0] for i in self.boxpoints]
@@ -64,8 +72,10 @@ class Region:
         try:
             whRatio = max(self.width,self.height)/min(self.width,self.height)
             tilt = self.angle if self.angle<=90 else self.angle%90
-            if whRatio<5 or abs(tilt-45)<10: return "BAD"
-            return "OK"
+            if whRatio<7: return "BAD" #or abs(tilt-45)<10: return "BAD"
+            #else:
+                #if self.proposedType == "taller":print(whRatio)
+            #    return "OK"
         except:
             return "UNINITIALIZED"
 def conflictsRemain(l):
@@ -78,7 +88,7 @@ def conflictsRemain(l):
         return False;
 
 
-def boudingBox(regions):
+def boudingBoxRegions(regions):
     lefts=[i.left for i in regions]
     rights=[i.right for i in regions]
     ups=[i.up for i in regions]
@@ -97,18 +107,18 @@ def conflictsRemain(l):
                         if(((l[rect].isIn(l[r]) and not(rect==r)))):#not(l[group][rect].isEqual(l[g][r])))):
                             return True
         return False;
-def getClusters(rects):
+def getClustersRegions(rects):
     if(conflictsRemain(rects)):
         for rect in range(len(rects)):
             for other in range(len(rects)):
                 if(not(rect==other)) and rects[rect].isIn(rects[other]):
-                    bounding = boudingBox([rects[rect],rects[other]])
+                    bounding = boudingBoxRegions([rects[rect],rects[other]])
                     a = rects[rect]
                     b = rects[other]
                     rects.remove(a)
                     rects.remove(b)
                     rects.append(bounding)
-                    return getClusters(rects)
+                    return getClustersRegions(rects)
 
     else:
         rects.sort(key=lambda target:target.getArea())

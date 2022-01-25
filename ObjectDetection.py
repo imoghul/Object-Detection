@@ -46,7 +46,7 @@ def getContours(processed,maxContours=None):
     temp  = cnt
     cnt=[]
     for c in temp:
-        if 1 or cv.contourArea(c)>250:
+        if 1 or cv.contourArea(c)>50:#250:
             cnt.append(c)
     cnt.sort(key=lambda contour:cv.contourArea(contour))
     cnt.reverse()
@@ -78,7 +78,9 @@ def getBoxes(targets):
     boxes=[]
     if len(targets) > 0:
         for target in targets:
-            boxes.append(target.getRect())
+            rect = target.getRect()
+            rect.Region = target.Region
+            boxes.append(rect)
     boxes.sort(key=lambda target:target.getArea())
     boxes.reverse()
     return boxes
@@ -88,7 +90,7 @@ def getObjects(boxes):
     objects=[]
     if(len(boxes)>0):
         if(type(boxes[0])==Rect):
-            objects = rect.getClusters(boxes)
+            objects = rect.getClustersRects(boxes)
         objects.sort(key=lambda target:target.getArea())
         objects.reverse()
     else:
