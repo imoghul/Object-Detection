@@ -6,10 +6,8 @@ import cv2 as cv
 import imutils
 import numpy as np
 
-import rect
-import region
-from rect import *
-from region import *
+from objects import *
+from utils import *
 
 defaultThresh=30
 
@@ -21,13 +19,14 @@ def getProcessed(image,threshold1=15,threshold2=20,sigma=12):
     imgBlur = cv.GaussianBlur(img, (7, 7), 1)
     imgGray = cv.cvtColor(imgBlur, cv.COLOR_BGR2GRAY)
     imgGray = cv.bilateralFilter(imgGray, d = 7, sigmaSpace = 75, sigmaColor =75)
-    dilationKernal = np.ones((3, 3))
-    dilationIterations = 3
+    dilationKernal = np.ones((2, 2))
+    dilationIterations = 2
     auto=False
     if(not auto):
         imgCanny = cv.Canny(imgGray, threshold1,threshold2) 
-        #imgDilated = cv.dilate(imgCanny, dilationKernal, iterations=dilationIterations)
-        return imgCanny#imgDilated
+        useDilation = False
+        if useDilation: return cv.dilate(imgCanny, dilationKernal, iterations=dilationIterations)
+        else: return imgCanny
     else:
         v = np.mean(imgGray)
         sigma = cv.getTrackbarPos("Sigma", "Final")/100
@@ -46,7 +45,7 @@ def getContours(processed,maxContours=None):
     temp  = cnt
     cnt=[]
     for c in temp:
-        if 1 or cv.contourArea(c)>50:#250:
+        if True:#cv.contourArea(c)>50:#250:
             cnt.append(c)
     cnt.sort(key=lambda contour:cv.contourArea(contour))
     cnt.reverse()
@@ -65,7 +64,7 @@ def getTargets(cnt,maxTargets=None):
         region = Region(minrect)
         rect = Rect(x,y,w,h)
         rect.Region = region
-        if (rect.area>500):
+        if region.getClassification()=="OK":
             targets.append(rect)
     targets.sort(key=lambda target:target.area)
     targets.reverse()
@@ -90,7 +89,7 @@ def getObjects(boxes):
     objects=[]
     if(len(boxes)>0):
         if(type(boxes[0])==Rect):
-            objects = rect.getClustersRects(boxes)
+            objects = getClustersRects(boxes)
         objects.sort(key=lambda target:target.getArea())
         objects.reverse()
     else:
@@ -99,7 +98,7 @@ def getObjects(boxes):
     temp = objects.copy()
     objects=[]
     for o in temp:
-        if o.area>500:#o.isEligible(heightthresh=20,widththresh=100):
+        if True:
             objects.append(o)
     
     for i in range(len(objects)):

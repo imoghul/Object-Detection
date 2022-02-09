@@ -5,9 +5,9 @@ import ObjectDetection
 import numpy as np
 import random
 import argparse
-import utils
+from utils import *
 import time
-from rect import *
+from objects import *
 from classifier import *
 
 print("q: to quit")#\nt: to toggle automatically detecting when there is action(current state shown by color of border)\nd: to force a detection unconditionally")
@@ -55,7 +55,6 @@ fps = 60
 isClassifying=False # if automatic contour detection to neural network detection is on
 key=cv.waitKey(1)
 lastTime = int(time.time())
-dnnTimeDelay = 3#seconds
 prevFrame = None
 while(not (key & 0xFF == ord('q'))): # main loop
     timer = cv.getTickCount()
@@ -81,7 +80,7 @@ while(not (key & 0xFF == ord('q'))): # main loop
     processed = ObjectDetection.getProcessed(frame,threshold1=thresh1,threshold2=thresh2)
     contours = ObjectDetection.getContours(processed)
     targets = ObjectDetection.getTargets(contours)
-    boxes = ObjectDetection.getBoxes(targets)
+    boxes = targets#ObjectDetection.getBoxes(targets)
     objects = ObjectDetection.getObjects(boxes)#ObjectDetection.getObjectsFinal(frame, threshval1 = thresh1, threshval2 = thresh2)
     ### image initialization for each frame
     empty = np.zeros((frame.shape[0], frame.shape[1], 3), np.uint8)
@@ -100,16 +99,23 @@ while(not (key & 0xFF == ord('q'))): # main loop
         else : t.Region.drawColor(blank,(0,0,255),thickness=1)
     for b in boxes:
         b.drawColor(processed,(0,255,0),thickness=1)
+    # gate detection
     interests = getInterests(boxes)
     proposedPoles = getProposedPoles(interests)
     proposedTops = getProposedTops(interests,proposedPoles)
     gateBoxes = proposedPoles+proposedTops
     gateBox = boundingBoxRects(gateBoxes)
-    for i in gateBoxes:
-        i.drawColor(screen,(0,255,0),thickness=1)
-    if gateBox!=None:gateBox.drawColor(frame,(0,0,255))
+    for i in proposedPoles:
+        i.drawColor(screen,(255,100,0),thickness=1)
+    for i in proposedTops:
+        i.drawColor(screen,(100,255,0),thickness=1)
+    if gateBox!=None:
+        gateBox.Region = Region()
+        gateBox.Region.width = gateBox.w
+        gateBox.Region.height = gateBox.h
+        if gateBox.Region.getProposedType()=="wider":gateBox.drawColor(frame,(0,0,255))
     # stitching images and writing output
-    stacked = utils.stackImages(1,([blank,processed],[screen,frame]))
+    stacked = stackImages(1,([blank,processed],[screen,frame]))
     fps = cv.getTickFrequency() / (cv.getTickCount() - timer)
     cv.putText(stacked,file + " fps: "+str(int(fps)), (75, 40), cv.FONT_HERSHEY_SIMPLEX, 0.7, (20,230,20) if fps>60 else ((230,20,20) if fps>20 else (20,20,230)), 2)
     stacked = imutils.resize(stacked,height=800)#cv.resize(stacked,(1200,850))

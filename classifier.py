@@ -1,9 +1,9 @@
-from rect import *
-from region import *
+from objects import *
+from utils import *
 def getInterests(boxes):
     interests = []
     for b in boxes.copy():
-        if b.Region.getClassification()!="BAD": #and (b.Region.proposedType == "taller" or b.Region.proposedType=="wider"):
+        if b.Region.getClassification()=="OK": 
             interests.append(b)
     return interests
 def getProposedPoles(interests):
@@ -13,6 +13,7 @@ def getProposedPoles(interests):
         r.Region = Region()
         r.Region.width = r.w
         r.Region.height = r.h
+        r.Region.getProposedType()
     res.sort(key = lambda x: x.area,reverse=True)
     res = res[0:min(2,len(res))]
     return res
