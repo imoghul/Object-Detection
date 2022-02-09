@@ -1,5 +1,0 @@
-classes=2
-train=custom_cfg/train.txt   
-valid=custom_cfg/test.txt   
-names=custom_cfg/detection.names   
-backup=backup/
